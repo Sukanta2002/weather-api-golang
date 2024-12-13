@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
@@ -16,26 +16,34 @@ func GetWeather(w http.ResponseWriter, r *http.Request) {
 	location := mux.Vars(r)["location"]
 
 	apikey := os.Getenv("WEATHER_API_KEY")
-	fmt.Println("api key: ", apikey)
-	fmt.Println("Location: ", location)
 
 	res, err := http.Get("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" + location + "?unitGroup=metric&key=" + apikey + "&contentType=json")
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err.Error())
+		utils.ApiError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	defer res.Body.Close()
 
-	var result map[string]interface{}
 	data, err := io.ReadAll(res.Body)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err.Error())
+		utils.ApiError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	json.Unmarshal(data, &result)
+	if res.StatusCode != 200 {
+		log.Println("Status code: ", res.StatusCode)
+		log.Println("res: ", string(data))
+		utils.ApiError(w, res.StatusCode, string(data))
+		return
+	}
 
-	fmt.Println(res.Status)
+	var result map[string]interface{}
+
+	json.Unmarshal(data, &result)
 
 	utils.ApiResponce(w, http.StatusOK, result)
 
