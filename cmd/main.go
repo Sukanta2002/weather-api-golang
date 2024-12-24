@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,11 +19,27 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPort := os.Getenv("REDIS_PORT")
+
+	if redisHost == "" || redisPort == "" {
+		redisHost = "localhost" // Fallback to localhost for local testing
+		redisPort = "6379"
+	}
+	add := redisHost + ":" + redisPort
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     add,
 		Password: "",
 		DB:       0,
 	})
+
+	// Test the connection
+	ctx := context.Background()
+	_, err = rdb.Ping(ctx).Result()
+	if err != nil {
+		log.Fatalf("Could not connect to Redis: %v", err)
+	}
 
 	Port := os.Getenv("PORT")
 
