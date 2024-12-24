@@ -75,13 +75,13 @@ The caching logic is implemented in the [`WeatherController`](./controllers/weat
 
 The application uses Docker Compose to run two services:
 
-1. API Server ([`go-api`](./controllers/weather_controller.go)):
+1. API Server ([`go-api`](./cmd/main.go)):
 
 - Built from Golang 1.23
 - Exposes port 8000
 - Connects to Redis service
 
-2. Redis Server ([`redis`](./controllers/weather_controller.go)):
+2. Redis Server ([`redis`](./cmd/main.go)):
 
 - Uses official Redis image
 - Persistent storage with Docker volumes
